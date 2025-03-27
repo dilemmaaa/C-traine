@@ -1,0 +1,12 @@
+﻿bin/
+obj/
+Properties/
+.vs/
+.vscode/
+*.user
+*.suo
+*.cache
+*.swp
+*.swo
+*.log
+launchSettings.json
