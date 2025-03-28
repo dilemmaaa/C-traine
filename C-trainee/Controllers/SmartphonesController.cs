@@ -34,11 +34,11 @@ namespace C_trainee.Controllers
 
         // GET /smartphones
         [HttpGet]
-        public IEnumerable<Smartphone> Get() => _smartphones;
+        public IEnumerable<Smartphone> GetAll() => _smartphones;
 
         // GET /smartphones/1
-        [HttpGet("{id}")]
-        public ActionResult<Smartphone> Get(int id)
+        [HttpGet("{id:int}")]
+        public ActionResult<Smartphone> GetById([FromRoute] int id)
         {
             var phone = _smartphones.FirstOrDefault(p => p.Id == id);
             return phone == null ? NotFound() : phone;
@@ -46,38 +46,59 @@ namespace C_trainee.Controllers
 
         // POST /smartphones
         [HttpPost]
-        public ActionResult<Smartphone> Post(Smartphone phone)
+        public IActionResult Create([FromBody] CreateSmartphoneRequest request)
         {
-            phone.Id = _smartphones.Max(p => p.Id) + 1;
+            var phone = new Smartphone
+            {
+                Id = _smartphones.Max(p => p.Id) + 1,
+                Model = request.Model,
+                Manufacturer = request.Manufacturer,
+                PriceRUB = request.PriceRUB,
+                StorageGB = request.StorageGB,
+                Has5G = request.Has5G,
+                ReleaseDate = request.ReleaseDate
+            };
+
             _smartphones.Add(phone);
-            return CreatedAtAction(nameof(Get), new { id = phone.Id }, phone);
+            return Ok(new { Id = phone.Id });
         }
 
         // PUT /smartphones/1
-        [HttpPut("{id}")]
-        public ActionResult<Smartphone> Put(int id, Smartphone updatedPhone)
+        [HttpPut("{id:int}")]
+        public IActionResult Update([FromRoute] int id, [FromBody] Smartphone smartphone)
         {
             var phone = _smartphones.FirstOrDefault(p => p.Id == id);
             if (phone == null) return NotFound();
 
-            phone.Model = updatedPhone.Model;
-            phone.Manufacturer = updatedPhone.Manufacturer;
-            phone.PriceRUB = updatedPhone.PriceRUB;
-            phone.StorageGB = updatedPhone.StorageGB;
-            phone.Has5G = updatedPhone.Has5G;
-            phone.ReleaseDate = updatedPhone.ReleaseDate;
+            phone.Model = smartphone.Model;
+            phone.Manufacturer = smartphone.Manufacturer;
+            phone.PriceRUB = smartphone.PriceRUB;
+            phone.StorageGB = smartphone.StorageGB;
+            phone.Has5G = smartphone.Has5G;
+            phone.ReleaseDate = smartphone.ReleaseDate;
 
-            return phone;
+            return NoContent();
         }
 
         // DELETE /smartphones/1
-        [HttpDelete("{id}")]
-        public ActionResult<bool> Delete(int id)
+        [HttpDelete("{id:int}")]
+        public IActionResult DeleteById([FromRoute] int id)
         {
             var phone = _smartphones.FirstOrDefault(p => p.Id == id);
-            if (phone == null) return false;
+            if (phone == null) return NotFound();
 
-            return _smartphones.Remove(phone);
+            var isSmartphoneDeleted = _smartphones.Remove(phone);
+            return isSmartphoneDeleted ? NoContent() : NotFound();
         }
+    }
+
+    public class CreateSmartphoneRequest
+    {
+        public required string Model { get; set; }
+        public required string Manufacturer { get; set; }
+        public decimal PriceRUB { get; set; }
+        public int StorageGB { get; set; }
+        public bool Has5G { get; set; }
+        public DateTime ReleaseDate { get; set; }
     }
 }
